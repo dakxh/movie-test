@@ -1,279 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artplayer | Native HLS Master M3U8 Tester</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/artplayer@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --panel-bg: #1a1a1a;
-            --primary: #4A90E2;
-            --danger: #e24a4a;
-            --text: #e0e0e0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            margin: 0;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 1100px;
-        }
-        .header-box {
-            background: var(--panel-bg);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        h2 { margin-top: 0; color: #fff; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;}
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
-        input, select {
-            flex: 1;
-            padding: 12px 15px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #252525;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input:focus, select:focus { border-color: var(--primary); }
-        button {
-            padding: 12px 24px;
-            border-radius: 6px;
-            border: none;
-            background: var(--primary);
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background: #357ABD; }
-        
-        #external-controls {
-            display: none;
-            background: #111;
-            border: 1px solid #333;
-            border-left: 4px solid var(--danger);
-        }
-        .control-row {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            gap: 8px;
-        }
-        .control-group label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #aaa;
-        }
-
-        #player-wrapper {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header-box">
-        <h2>1. Master M3U8 Source</h2>
-        <div class="input-group">
-            <input type="text" id="m3u8Url" placeholder="Enter Master .m3u8 URL..." 
-                   value="https://huggingface.co/buckets/Gravatar44/xkca/56.Days/Season.01/Episode.02/master.m3u8">
-            <button onclick="loadStream()">Load Player</button>
-        </div>
-    </div>
-
-    <div class="header-box" id="external-controls">
-        <h2>2. Standard Stream Tracks</h2>
-        <div class="control-row">
-            <div class="control-group">
-                <label for="audioSelect">Audio Track</label>
-                <select id="audioSelect" onchange="forceAudioTrack()">
-                    <option value="">Loading Audio...</option>
-                </select>
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Artplayer | Native HLS Master M3U8 Tester</title>
+      <script src="https://cdn.jsdelivr.net/npm/artplayer@latest"></script>
+      <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+      <style>
+         :root {
+         --bg-color: #0d0d0d;
+         --panel-bg: #1a1a1a;
+         --primary: #4A90E2;
+         --danger: #e24a4a;
+         --text: #e0e0e0;
+         }
+         body {
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         background-color: var(--bg-color);
+         color: var(--text);
+         margin: 0;
+         padding: 30px 20px;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         }
+         .container {
+         width: 100%;
+         max-width: 1100px;
+         }
+         .header-box {
+         background: var(--panel-bg);
+         padding: 20px;
+         border-radius: 8px;
+         margin-bottom: 20px;
+         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+         }
+         /* Target the native subtitles inside the Artplayer video element */
+         video::cue {
+         color: #ffffff; /* Pure white text */
+         background-color: transparent; /* Remove the default ugly black box */
+         text-shadow: 
+         0px 0px 4px rgba(0, 0, 0, 1),
+         0px 0px 8px rgba(0, 0, 0, 0.8),
+         2px 2px 4px rgba(0, 0, 0, 0.9); /* Heavy drop shadow for readability */
+         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+         font-size: 1.2rem;
+         font-weight: 600;
+         }
+         /* You can also style specific VTT tags if the source file provides them */
+         video::cue(b) {
+         color: #ffd700; /* Make bold text gold */
+         }
+         video::cue(i) {
+         font-style: italic;
+         color: #e0e0e0;
+         }
+         h2 { margin-top: 0; color: #fff; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;}
+         .input-group {
+         display: flex;
+         gap: 10px;
+         }
+         input, select {
+         flex: 1;
+         padding: 12px 15px;
+         border-radius: 6px;
+         border: 1px solid #333;
+         background: #252525;
+         color: #fff;
+         font-size: 1rem;
+         outline: none;
+         transition: border-color 0.2s;
+         }
+         input:focus, select:focus { border-color: var(--primary); }
+         button {
+         padding: 12px 24px;
+         border-radius: 6px;
+         border: none;
+         background: var(--primary);
+         color: #fff;
+         font-size: 1rem;
+         font-weight: 600;
+         cursor: pointer;
+         transition: background 0.2s;
+         }
+         button:hover { background: #357ABD; }
+         #external-controls {
+         display: none;
+         background: #111;
+         border: 1px solid #333;
+         border-left: 4px solid var(--danger);
+         }
+         .control-row {
+         display: flex;
+         gap: 20px;
+         align-items: center;
+         }
+         .control-group {
+         display: flex;
+         flex-direction: column;
+         flex: 1;
+         gap: 8px;
+         }
+         .control-group label {
+         font-size: 0.85rem;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         color: #aaa;
+         }
+         #player-wrapper {
+         width: 100%;
+         aspect-ratio: 16 / 9;
+         background: #000;
+         border-radius: 8px;
+         overflow: hidden;
+         box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <div class="header-box">
+            <h2>1. Master M3U8 Source</h2>
+            <div class="input-group">
+               <input type="text" id="m3u8Url" placeholder="Enter Master .m3u8 URL..." 
+                  value="https://huggingface.co/buckets/Gravatar44/xkca/56.Days/Season.01/Episode.02/master.m3u8">
+               <button onclick="loadStream()">Load Player</button>
             </div>
-            <div class="control-group">
-                <label for="subSelect">Subtitle Track</label>
-                <select id="subSelect" onchange="forceSubTrack()">
-                    <option value="">Loading Subtitles...</option>
-                </select>
+         </div>
+         <div class="header-box" id="external-controls">
+            <h2>2. Standard Stream Tracks</h2>
+            <div class="control-row">
+               <div class="control-group">
+                  <label for="audioSelect">Audio Track</label>
+                  <select id="audioSelect" onchange="forceAudioTrack()">
+                     <option value="">Loading Audio...</option>
+                  </select>
+               </div>
+               <div class="control-group">
+                  <label for="subSelect">Subtitle Track</label>
+                  <select id="subSelect" onchange="forceSubTrack()">
+                     <option value="">Loading Subtitles...</option>
+                  </select>
+               </div>
             </div>
-        </div>
-    </div>
-
-    <div id="player-wrapper"></div>
-</div>
-
-<script>
-    let art = null;
-    let globalHls = null; 
-
-    // Custom CORS workaround system
-    const CORS_PROXY_BASE = "https://xkca.dadalapathy756.workers.dev/?url=";
-
-    function generateProperResolvedHfPath(u) {
-        if (!u || typeof u !== 'string') return u;
-        let sanitized = u.replace(/[?&]download=true/g, '');
-        return sanitized.replace(/^(https?:\/\/huggingface\.co\/buckets\/[^/]+\/[^/]+)\/(?!resolve\/)(.*)$/i, '$1/resolve/$2');
-    }
-
-    function ensureCorsHeaderProxy(rawAbsoluteUrl) {
-        const urlToFetch = generateProperResolvedHfPath(rawAbsoluteUrl);
-        if (urlToFetch.includes('huggingface.co/buckets/')) {
-            return CORS_PROXY_BASE + encodeURIComponent(urlToFetch);
-        }
-        return urlToFetch;
-    }
-
-    function loadStream() {
-        let inputUrl = document.getElementById('m3u8Url').value.trim();
-        if (!inputUrl) {
-            alert('Please enter a valid URL.');
-            return;
-        }
-        
-        // Pass to the player directly (proxy logic handled by loader)
-        initializePlayer(ensureCorsHeaderProxy(inputUrl));
-    }
-
-    function initializePlayer(hlsUrl) {
-        if (art) {
-            art.destroy(true);
-            art = null;
-        }
-
-        document.getElementById('external-controls').style.display = 'block';
-
-        const artOptions = {
-            container: '#player-wrapper',
-            url: hlsUrl, 
-            type: 'm3u8',
-            volume: 0.7,
-            autoplay: false,
-            setting: true, 
-            customType: {
-                m3u8: function (video, url, artInstance) {
-                    if (Hls.isSupported()) {
-                        if (artInstance.hls) artInstance.hls.destroy();
-
-                        // Enforce CORS proxy on inner hls segments
-                        class HfBucketsProxyLoader extends Hls.DefaultConfig.loader {
-                            load(context, config, callbacks) {
-                                if (context.url) {
-                                    context.url = ensureCorsHeaderProxy(context.url);
-                                }
-                                super.load(context, config, callbacks);
-                            }
-                        }
-                        
-                        const hls = new Hls({
-                            loader: HfBucketsProxyLoader,
-                            renderTextTracksNatively: true // Allows hls.js to map WebVTT inside custom video track buffers properly
-                        });
-                        globalHls = hls; 
-
-                        hls.loadSource(url);
-                        hls.attachMedia(video);
-                        artInstance.hls = hls;
-                        
-                        artInstance.on('destroy', () => hls.destroy());
-
-                        // --- Audio Events ---
-                        hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, function (_, data) {
-                            const audioSelect = document.getElementById('audioSelect');
-                            audioSelect.innerHTML = '';
-                            
-                            if (data.audioTracks && data.audioTracks.length > 0) {
-                                audioSelect.disabled = false;
-                                data.audioTracks.forEach((track, index) => {
-                                    const opt = document.createElement('option');
-                                    opt.value = index; 
-                                    opt.text = track.name || track.language || `Audio Track ${index + 1}`;
-                                    if (index === hls.audioTrack) opt.selected = true;
-                                    audioSelect.appendChild(opt);
-                                });
-                            } else {
-                                audioSelect.innerHTML = '<option value="">No alternative audio</option>';
-                                audioSelect.disabled = true;
-                            }
-                        });
-
-                        // --- Native Subtitles Events ---
-                        hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, function (_, data) {
-                            const subSelect = document.getElementById('subSelect');
-                            subSelect.innerHTML = '<option value="-1">Off</option>';
-                            
-                            if (data.subtitleTracks && data.subtitleTracks.length > 0) {
-                                subSelect.disabled = false;
-                                data.subtitleTracks.forEach((track, index) => {
-                                    const opt = document.createElement('option');
-                                    opt.value = index;
-                                    opt.text = track.name || track.language || `Subtitle Track ${index + 1}`;
-                                    if (index === hls.subtitleTrack) opt.selected = true;
-                                    subSelect.appendChild(opt);
-                                });
-                            } else {
-                                subSelect.innerHTML = '<option value="">No subtitles available</option>';
-                                subSelect.disabled = true;
-                            }
-                        });
-
-                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                        // Fallback generic playback payload on iOS systems natively
-                        video.src = ensureCorsHeaderProxy(url);
-                    }
-                }
-            }
-        };
-
-        art = new Artplayer(artOptions);
-    }
-
-    function forceAudioTrack() {
-        if (globalHls) {
-            const audioSelect = document.getElementById('audioSelect');
-            globalHls.audioTrack = parseInt(audioSelect.value, 10);
-        }
-    }
-
-    function forceSubTrack() {
-        if (globalHls) {
-            const subSelect = document.getElementById('subSelect');
-            // By utilizing hls.subtitleTrack setter directly, standard WebVTT subs are mapped
-            globalHls.subtitleTrack = parseInt(subSelect.value, 10);
-        }
-    }
-</script>
-
-</body>
+         </div>
+         <div id="player-wrapper"></div>
+      </div>
+      <script>
+         let art = null;
+         let globalHls = null; 
+         
+         // Custom CORS workaround system
+         const CORS_PROXY_BASE = "https://xkca.dadalapathy756.workers.dev/?url=";
+         
+         function generateProperResolvedHfPath(u) {
+             if (!u || typeof u !== 'string') return u;
+             let sanitized = u.replace(/[?&]download=true/g, '');
+             return sanitized.replace(/^(https?:\/\/huggingface\.co\/buckets\/[^/]+\/[^/]+)\/(?!resolve\/)(.*)$/i, '$1/resolve/$2');
+         }
+         
+         function ensureCorsHeaderProxy(rawAbsoluteUrl) {
+             const urlToFetch = generateProperResolvedHfPath(rawAbsoluteUrl);
+             if (urlToFetch.includes('huggingface.co/buckets/')) {
+                 return CORS_PROXY_BASE + encodeURIComponent(urlToFetch);
+             }
+             return urlToFetch;
+         }
+         
+         function loadStream() {
+             let inputUrl = document.getElementById('m3u8Url').value.trim();
+             if (!inputUrl) {
+                 alert('Please enter a valid URL.');
+                 return;
+             }
+             
+             // Pass to the player directly (proxy logic handled by loader)
+             initializePlayer(ensureCorsHeaderProxy(inputUrl));
+         }
+         
+         function initializePlayer(hlsUrl) {
+             if (art) {
+                 art.destroy(true);
+                 art = null;
+             }
+         
+             document.getElementById('external-controls').style.display = 'block';
+         
+             const artOptions = {
+                 container: '#player-wrapper',
+                 url: hlsUrl, 
+                 type: 'm3u8',
+                 volume: 0.7,
+                 autoplay: false,
+                 setting: true, 
+                 customType: {
+                     m3u8: function (video, url, artInstance) {
+                         if (Hls.isSupported()) {
+                             if (artInstance.hls) artInstance.hls.destroy();
+         
+                             // Enforce CORS proxy on inner hls segments
+                             class HfBucketsProxyLoader extends Hls.DefaultConfig.loader {
+                                 load(context, config, callbacks) {
+                                     if (context.url) {
+                                         context.url = ensureCorsHeaderProxy(context.url);
+                                     }
+                                     super.load(context, config, callbacks);
+                                 }
+                             }
+                             
+                             const hls = new Hls({
+                                 loader: HfBucketsProxyLoader,
+                                 renderTextTracksNatively: true // Allows hls.js to map WebVTT inside custom video track buffers properly
+                             });
+                             globalHls = hls; 
+         
+                             hls.loadSource(url);
+                             hls.attachMedia(video);
+                             artInstance.hls = hls;
+                             
+                             artInstance.on('destroy', () => hls.destroy());
+         
+                             // --- Audio Events ---
+                             hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, function (_, data) {
+                                 const audioSelect = document.getElementById('audioSelect');
+                                 audioSelect.innerHTML = '';
+                                 
+                                 if (data.audioTracks && data.audioTracks.length > 0) {
+                                     audioSelect.disabled = false;
+                                     data.audioTracks.forEach((track, index) => {
+                                         const opt = document.createElement('option');
+                                         opt.value = index; 
+                                         opt.text = track.name || track.language || `Audio Track ${index + 1}`;
+                                         if (index === hls.audioTrack) opt.selected = true;
+                                         audioSelect.appendChild(opt);
+                                     });
+                                 } else {
+                                     audioSelect.innerHTML = '<option value="">No alternative audio</option>';
+                                     audioSelect.disabled = true;
+                                 }
+                             });
+         
+                             // --- Native Subtitles Events ---
+                             hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, function (_, data) {
+                                 const subSelect = document.getElementById('subSelect');
+                                 subSelect.innerHTML = '<option value="-1">Off</option>';
+                                 
+                                 if (data.subtitleTracks && data.subtitleTracks.length > 0) {
+                                     subSelect.disabled = false;
+                                     data.subtitleTracks.forEach((track, index) => {
+                                         const opt = document.createElement('option');
+                                         opt.value = index;
+                                         opt.text = track.name || track.language || `Subtitle Track ${index + 1}`;
+                                         if (index === hls.subtitleTrack) opt.selected = true;
+                                         subSelect.appendChild(opt);
+                                     });
+                                 } else {
+                                     subSelect.innerHTML = '<option value="">No subtitles available</option>';
+                                     subSelect.disabled = true;
+                                 }
+                             });
+         
+                         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                             // Fallback generic playback payload on iOS systems natively
+                             video.src = ensureCorsHeaderProxy(url);
+                         }
+                     }
+                 }
+             };
+         
+             art = new Artplayer(artOptions);
+         }
+         
+         function forceAudioTrack() {
+             if (globalHls) {
+                 const audioSelect = document.getElementById('audioSelect');
+                 globalHls.audioTrack = parseInt(audioSelect.value, 10);
+             }
+         }
+         
+         function forceSubTrack() {
+             if (globalHls) {
+                 const subSelect = document.getElementById('subSelect');
+                 // By utilizing hls.subtitleTrack setter directly, standard WebVTT subs are mapped
+                 globalHls.subtitleTrack = parseInt(subSelect.value, 10);
+             }
+         }
+      </script>
+   </body>
 </html>
