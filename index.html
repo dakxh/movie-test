@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artplayer | Native HLS Master M3U8 Tester (Edge CDN + WebVTT)</title>
+    <title>Artplayer | Enhanced Custom DOM HLS M3U8 Tester</title>
 
     <script src="https://cdn.jsdelivr.net/npm/artplayer@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -14,12 +14,15 @@
             --bg-color: #0d0d0d;
             --panel-bg: #1a1a1a;
             --primary: #4A90E2;
+            --primary-hover: #357ABD;
             --danger: #e24a4a;
             --text: #e0e0e0;
+            --border-radius: 8px;
+            --transition: 0.2s ease;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text);
             margin: 0;
@@ -32,50 +35,53 @@
         .container {
             width: 100%;
             max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .header-box {
             background: var(--panel-bg);
             padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
         h2 {
             margin-top: 0;
             color: #fff;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             border-bottom: 1px solid #333;
-            padding-bottom: 10px;
+            padding-bottom: 12px;
             margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .input-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
-        input,
-        select {
+        input, select {
             flex: 1;
-            padding: 12px 15px;
+            padding: 12px 16px;
             border-radius: 6px;
             border: 1px solid #333;
             background: #252525;
             color: #fff;
             font-size: 1rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color var(--transition), box-shadow var(--transition);
         }
 
-        input:focus,
-        select:focus {
+        input:focus, select:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
         }
 
         button {
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 6px;
             border: none;
             background: var(--primary);
@@ -83,79 +89,85 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background var(--transition), transform 0.1s;
         }
 
-        button:hover {
-            background: #357ABD;
-        }
+        button:hover { background: var(--primary-hover); }
+        button:active { transform: scale(0.98); }
 
         #external-controls {
             display: none;
-            background: #111;
-            border: 1px solid #333;
             border-left: 4px solid var(--danger);
         }
 
         .control-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            align-items: center;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            flex: 1;
             gap: 8px;
         }
 
         .control-group label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #aaa;
+            font-weight: 600;
         }
 
         #player-wrapper {
             width: 100%;
             aspect-ratio: 16 / 9;
             background: #000;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
         }
 
-        /* --- HARDWARE ACCELERATED WEB-VTT STYLING --- */
+        /* --- SUBTITLE ENGINE OVERRIDES --- */
+        video::-webkit-media-text-track-display,
+        video::-webkit-media-text-track-container {
+            display: none !important;
+        }
+
         video::cue {
-            color: #f7f7f7;
-            font-size: 1.8rem;
-            font-weight: 400;
-            line-height: 1.1;
-            font-family: "Arial", sans-serif;
-            background-color: transparent;
-            text-rendering: optimizeLegibility; /* Forces GPU font smoothing */
-            text-shadow:
-                0 0 8px #000,
-                0 0 8px #000,
-                0 0 8px #000,
-                -1px -1px 0 #000, 1px -1px 0 #000,
-                -1px 1px 0 #000, 1px 1px 0 #000;
+            color: transparent !important;
+            background: transparent !important;
         }
 
-        video::cue(b) {
-            color: #ffd700;
+        /* --- PREMIUM FROSTED DOM SUBTITLES --- */
+        .art-subtitle {
+            background-color: rgba(0, 0, 0, 0.65) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            
+            padding: 10px 16px !important;
+            border-radius: 6px !important;
+            width: fit-content !important;
+            max-width: 85% !important;
+            
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            bottom: 10% !important;
+            
+            color: #ffffff !important;
+            font-size: clamp(1rem, 2.5vw, 1.5rem) !important; /* Responsive sizing */
+            font-weight: 500 !important;
+            line-height: 1.3 !important;
+            font-family: system-ui, -apple-system, sans-serif !important;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8) !important;
+
+            transition: opacity 0.15s ease-in-out, transform 0.1s;
         }
 
-        video::cue(i) {
-            font-style: italic;
-            color: #e0e0e0;
-        }
-
-        /* Responsive Vertical Shift (Avoids hardcoded px for mobile compatibility) */
-        video::-webkit-media-text-track-display {
-            transform: translateY(-5vh);
-        }
+        .art-subtitle b { color: #ffd700; font-weight: 700; }
+        .art-subtitle i { font-style: italic; opacity: 0.9; }
     </style>
 </head>
 
@@ -165,9 +177,9 @@
         <div class="header-box">
             <h2>1. Master M3U8 Source</h2>
             <div class="input-group">
-                <input type="text" id="m3u8Url" placeholder="Enter Master .m3u8 URL..."
+                <input type="url" id="m3u8Url" placeholder="Enter Master .m3u8 URL..."
                     value="https://huggingface.co/buckets/Gravatar44/xkca/56.Days/Season.01/Episode.02/master.m3u8">
-                <button onclick="loadStream()">Load Player</button>
+                <button onclick="StreamApp.loadStream()">Load Player</button>
             </div>
         </div>
 
@@ -176,14 +188,14 @@
             <div class="control-row">
                 <div class="control-group">
                     <label for="audioSelect">Audio Track</label>
-                    <select id="audioSelect" onchange="forceAudioTrack()">
-                        <option value="">Loading Audio...</option>
+                    <select id="audioSelect" onchange="StreamApp.forceAudioTrack()">
+                        <option value="">Waiting for stream...</option>
                     </select>
                 </div>
                 <div class="control-group">
                     <label for="subSelect">Subtitle Track</label>
-                    <select id="subSelect" onchange="forceSubTrack()">
-                        <option value="">Loading Subtitles...</option>
+                    <select id="subSelect" onchange="StreamApp.forceSubTrack()">
+                        <option value="">Waiting for stream...</option>
                     </select>
                 </div>
             </div>
@@ -193,174 +205,200 @@
     </div>
 
     <script>
-        let art = null;
-        let globalHls = null;
-
-        const CORS_PROXY_BASE = "https://xkca.dadalapathy756.workers.dev/?url=";
-        const proxyCache = new Map(); // Shared Memoization Cache
-
-        // High-speed string splitter for HF Bucket links
-        function generateProperResolvedHfPath(u) {
-            if (!u || typeof u !== 'string') return u;
-            let sanitized = u.split('?download=true')[0].split('&download=true')[0];
+        const StreamApp = (() => {
+            let art = null;
+            let hlsInstance = null;
+            const CORS_PROXY_BASE = "https://xkca.dadalapathy756.workers.dev/?url=";
             
-            if (!sanitized.startsWith('https://huggingface.co/buckets/') || sanitized.includes('/resolve/')) {
-                return sanitized;
-            }
+            // Keep track of event listeners for clean garbage collection
+            let activeTrackListeners = new Map(); 
 
-            const parts = sanitized.split('/');
-            if (parts.length > 6) {
-                parts.splice(6, 0, 'resolve');
-                return parts.join('/');
-            }
-            return sanitized;
-        }
+            const formatUrl = (u) => {
+                if (!u || typeof u !== 'string') return u;
+                let sanitized = u.replace(/[?&]download=true/g, '');
+                return sanitized.replace(/^(https?:\/\/huggingface\.co\/buckets\/[^/]+\/[^/]+)\/(?!resolve\/)(.*)$/i, '$1/resolve/$2');
+            };
 
-        function ensureCorsHeaderProxy(rawAbsoluteUrl) {
-            if (proxyCache.has(rawAbsoluteUrl)) {
-                return proxyCache.get(rawAbsoluteUrl);
-            }
+            const proxyUrl = (rawUrl) => {
+                const cleanUrl = formatUrl(rawUrl);
+                return cleanUrl.includes('huggingface.co/buckets/') 
+                    ? CORS_PROXY_BASE + encodeURIComponent(cleanUrl) 
+                    : cleanUrl;
+            };
 
-            const urlToFetch = generateProperResolvedHfPath(rawAbsoluteUrl);
-            let finalUrl = urlToFetch;
-            
-            if (urlToFetch.includes('huggingface.co/buckets/')) {
-                finalUrl = CORS_PROXY_BASE + encodeURIComponent(urlToFetch);
-            }
-            
-            proxyCache.set(rawAbsoluteUrl, finalUrl);
-            return finalUrl;
-        }
+            const cleanupPlayer = () => {
+                // Remove all bound DOM cuechange listeners to prevent memory leaks
+                activeTrackListeners.forEach((listener, track) => {
+                    track.removeEventListener('cuechange', listener);
+                });
+                activeTrackListeners.clear();
 
-        function loadStream() {
-            let inputUrl = document.getElementById('m3u8Url').value.trim();
-            if (!inputUrl) {
-                alert('Please enter a valid URL.');
-                return;
-            }
-
-            initializePlayer(ensureCorsHeaderProxy(inputUrl));
-        }
-
-        function initializePlayer(hlsUrl) {
-            if (art) {
-                art.destroy(true);
-                art = null;
-            }
-            
-            // Reset UI state locks per movie load
-            window.audioTracksInitialized = false;
-            window.subTracksInitialized = false;
-
-            document.getElementById('external-controls').style.display = 'block';
-
-            const artOptions = {
-                container: '#player-wrapper',
-                url: hlsUrl,
-                type: 'm3u8',
-                volume: 0.7,
-                autoplay: false,
-                setting: true,
-                customType: {
-                    m3u8: function (video, url, artInstance) {
-                        if (Hls.isSupported()) {
-                            if (artInstance.hls) artInstance.hls.destroy();
-
-                            class HfBucketsProxyLoader extends Hls.DefaultConfig.loader {
-                                load(context, config, callbacks) {
-                                    if (context.url) {
-                                        context.url = ensureCorsHeaderProxy(context.url);
-                                    }
-                                    super.load(context, config, callbacks);
-                                }
-                            }
-
-                            // Aggressive Edge CDN & Worker Transmuxing Configuration
-                            const hls = new Hls({
-                                loader: HfBucketsProxyLoader,
-                                renderTextTracksNatively: true,
-                                enableWorker: true,             // Offloads WebVTT/TS separation to a background thread
-                                maxBufferLength: 120,           
-                                maxMaxBufferLength: 180,        
-                                maxBufferSize: 100 * 1024 * 1024,
-                                manifestLoadingTimeOut: 15000,
-                                fragLoadingTimeOut: 30000,      
-                                lowLatencyMode: false           
-                            });
-                            
-                            globalHls = hls;
-
-                            hls.loadSource(url);
-                            hls.attachMedia(video);
-                            artInstance.hls = hls;
-
-                            artInstance.on('destroy', () => hls.destroy());
-
-                            hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, function (_, data) {
-                                if (window.audioTracksInitialized) return; // Prevent DOM Thrashing
-                                
-                                const audioSelect = document.getElementById('audioSelect');
-                                if (data.audioTracks && data.audioTracks.length > 0) {
-                                    window.audioTracksInitialized = true;
-                                    let audioHtml = '';
-                                    data.audioTracks.forEach((track, index) => {
-                                        const isSelected = (index === hls.audioTrack) ? 'selected' : '';
-                                        const name = track.name || track.language || `Audio Track ${index + 1}`;
-                                        audioHtml += `<option value="${index}" ${isSelected}>${name}</option>`;
-                                    });
-                                    audioSelect.innerHTML = audioHtml;
-                                    audioSelect.disabled = false;
-                                } else {
-                                    audioSelect.innerHTML = '<option value="">No alternative audio</option>';
-                                    audioSelect.disabled = true;
-                                }
-                            });
-
-                            hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, function (_, data) {
-                                if (window.subTracksInitialized) return; // Prevent DOM Thrashing
-                                
-                                const subSelect = document.getElementById('subSelect');
-                                if (data.subtitleTracks && data.subtitleTracks.length > 0) {
-                                    window.subTracksInitialized = true;
-                                    let subHtml = '<option value="-1">Off</option>';
-                                    data.subtitleTracks.forEach((track, index) => {
-                                        const isSelected = (index === hls.subtitleTrack) ? 'selected' : '';
-                                        const name = track.name || track.language || `Subtitle Track ${index + 1}`;
-                                        subHtml += `<option value="${index}" ${isSelected}>${name}</option>`;
-                                    });
-                                    subSelect.innerHTML = subHtml;
-                                    subSelect.disabled = false;
-                                } else {
-                                    subSelect.innerHTML = '<option value="">No subtitles available</option>';
-                                    subSelect.disabled = true;
-                                }
-                            });
-
-                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                            video.src = ensureCorsHeaderProxy(url);
-                        }
-                    }
+                if (art) {
+                    art.destroy(true);
+                    art = null;
+                }
+                if (hlsInstance) {
+                    hlsInstance.destroy();
+                    hlsInstance = null;
                 }
             };
 
-            art = new Artplayer(artOptions);
-        }
+            const initPlayer = (hlsUrl) => {
+                cleanupPlayer();
+                document.getElementById('external-controls').style.display = 'block';
 
-        function forceAudioTrack() {
-            if (globalHls) {
-                const audioSelect = document.getElementById('audioSelect');
-                globalHls.audioTrack = parseInt(audioSelect.value, 10);
-            }
-        }
+                art = new Artplayer({
+                    container: '#player-wrapper',
+                    url: hlsUrl,
+                    type: 'm3u8',
+                    volume: 0.7,
+                    autoplay: true,
+                    setting: true,
+                    subtitle: { url: '', type: 'srt' }, // Enforces DOM container creation
+                    customType: {
+                        m3u8: function (video, url, artRef) {
+                            if (Hls.isSupported()) {
+                                class ProxyLoader extends Hls.DefaultConfig.loader {
+                                    load(context, config, callbacks) {
+                                        if (context.url) context.url = proxyUrl(context.url);
+                                        super.load(context, config, callbacks);
+                                    }
+                                }
 
-        function forceSubTrack() {
-            if (globalHls) {
-                const subSelect = document.getElementById('subSelect');
-                globalHls.subtitleTrack = parseInt(subSelect.value, 10);
-            }
-        }
+                                hlsInstance = new Hls({
+                                    loader: ProxyLoader,
+                                    renderTextTracksNatively: true,
+                                    subtitleDisplay: false 
+                                });
+
+                                hlsInstance.loadSource(url);
+                                hlsInstance.attachMedia(video);
+                                artRef.hls = hlsInstance;
+
+                                setupHlsEvents(hlsInstance);
+                                
+                            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                                video.src = proxyUrl(url); // Safari Fallback
+                            }
+                        }
+                    }
+                });
+
+                setupSubtitleEngine(art);
+            };
+
+            const setupHlsEvents = (hls) => {
+                // Populate Audio Dropdown
+                hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, (_, data) => {
+                    populateDropdown('audioSelect', data.audioTracks, hls.audioTrack, 'Audio Track', 'No alternative audio');
+                });
+
+                // Populate Subtitle Dropdown
+                hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, (_, data) => {
+                    populateDropdown('subSelect', data.subtitleTracks, hls.subtitleTrack, 'Subtitle Track', 'No subtitles available', true);
+                });
+
+                // Auto-Recovery for Network/Media Errors
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.warn("Network error encountered, trying to recover...");
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.warn("Media error encountered, trying to recover...");
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                console.error("Unrecoverable HLS error. Destroying instance.");
+                                cleanupPlayer();
+                                break;
+                        }
+                    }
+                });
+            };
+
+            const populateDropdown = (id, tracks, currentIndex, defaultPrefix, emptyMsg, includeOff = false) => {
+                const select = document.getElementById(id);
+                select.innerHTML = includeOff ? '<option value="-1">Off</option>' : '';
+                
+                if (tracks && tracks.length > 0) {
+                    select.disabled = false;
+                    tracks.forEach((track, index) => {
+                        const opt = new Option(track.name || track.language || `${defaultPrefix} ${index + 1}`, index);
+                        if (index === currentIndex) opt.selected = true;
+                        select.add(opt);
+                    });
+                } else {
+                    select.innerHTML = `<option value="">${emptyMsg}</option>`;
+                    select.disabled = true;
+                }
+            };
+
+            const setupSubtitleEngine = (artRef) => {
+                artRef.on('ready', () => {
+                    const video = artRef.video;
+                    const subtitleDom = artRef.template.$subtitle;
+
+                    const renderCues = (event) => {
+                        const track = event.target;
+                        if (!['hidden', 'showing'].includes(track.mode)) return;
+
+                        const cues = track.activeCues;
+                        if (!cues || cues.length === 0) {
+                            subtitleDom.innerHTML = '';
+                            subtitleDom.style.display = 'none';
+                            return;
+                        }
+
+                        // Cleaner mapping approach without regex trailing-br logic
+                        const activeText = Array.from(cues)
+                            .map(c => c.text.replace(/\n/g, '<br>'))
+                            .join('<br>');
+
+                        subtitleDom.innerHTML = activeText;
+                        subtitleDom.style.display = 'block';
+                    };
+
+                    const bindTrack = (track) => {
+                        if (track.kind === 'subtitles' || track.kind === 'captions') {
+                            track.mode = 'hidden';
+                            if (!activeTrackListeners.has(track)) {
+                                track.addEventListener('cuechange', renderCues);
+                                activeTrackListeners.set(track, renderCues);
+                            }
+                        }
+                    };
+
+                    // Handle existing tracks and future dynamically added ones
+                    Array.from(video.textTracks).forEach(bindTrack);
+                    video.textTracks.addEventListener('addtrack', (e) => bindTrack(e.track));
+
+                    // Force hidden mode aggressively if browser tries to default it to 'showing'
+                    video.textTracks.addEventListener('change', () => {
+                        Array.from(video.textTracks).forEach(track => {
+                            if (track.mode === 'showing') track.mode = 'hidden';
+                        });
+                    });
+                });
+            };
+
+            return {
+                loadStream: () => {
+                    const url = document.getElementById('m3u8Url').value.trim();
+                    if (!url) return alert('Please enter a valid URL.');
+                    initPlayer(proxyUrl(url));
+                },
+                forceAudioTrack: () => {
+                    if (hlsInstance) hlsInstance.audioTrack = parseInt(document.getElementById('audioSelect').value, 10);
+                },
+                forceSubTrack: () => {
+                    if (hlsInstance) hlsInstance.subtitleTrack = parseInt(document.getElementById('subSelect').value, 10);
+                }
+            };
+        })();
     </script>
-
 </body>
 
 </html>
