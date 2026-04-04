@@ -221,7 +221,8 @@
 
             const proxyUrl = (rawUrl) => {
                 const cleanUrl = formatUrl(rawUrl);
-                return cleanUrl.includes('huggingface.co/buckets/') 
+                // Broadened to catch ANY huggingface url for chunks
+                return cleanUrl.includes('huggingface.co') 
                     ? CORS_PROXY_BASE + encodeURIComponent(cleanUrl) 
                     : cleanUrl;
             };
@@ -243,13 +244,13 @@
                 }
             };
 
-            const initPlayer = (hlsUrl) => {
+            const initPlayer = (url) => { // Takes RAW url now
                 cleanupPlayer();
                 document.getElementById('external-controls').style.display = 'block';
 
                 art = new Artplayer({
                     container: '#player-wrapper',
-                    url: hlsUrl,
+                    url: url, // RAW url is passed directly to the core
                     type: 'm3u8',
                     volume: 0.7,
                     autoplay: true,
@@ -260,6 +261,7 @@
                             if (Hls.isSupported()) {
                                 class ProxyLoader extends Hls.DefaultConfig.loader {
                                     load(context, config, callbacks) {
+                                        // context.url is properly resolved here, safe to wrap
                                         if (context.url) context.url = proxyUrl(context.url);
                                         super.load(context, config, callbacks);
                                     }
@@ -271,6 +273,7 @@
                                     subtitleDisplay: false 
                                 });
 
+                                // Let HLS use the raw URL as its base for calculating relative paths
                                 hlsInstance.loadSource(url);
                                 hlsInstance.attachMedia(video);
                                 artRef.hls = hlsInstance;
@@ -278,7 +281,7 @@
                                 setupHlsEvents(hlsInstance);
                                 
                             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                                video.src = proxyUrl(url); // Safari Fallback
+                                video.src = proxyUrl(url); // Safari Fallback directly proxies
                             }
                         }
                     }
@@ -298,7 +301,7 @@
                     populateDropdown('subSelect', data.subtitleTracks, hls.subtitleTrack, 'Subtitle Track', 'No subtitles available', true);
                 });
 
-                // Auto-Recovery for Network/Media Errors with Debouncing
+                // Auto-Recovery with a Hard Limit
                 let recoveryTimeout = null;
                 let mediaErrorCount = 0;
 
@@ -310,26 +313,26 @@
                                 hls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.warn("Media error encountered, trying to recover...");
                                 mediaErrorCount++;
+                                console.warn(`Media error encountered (${mediaErrorCount}), trying to recover...`);
                                 
-                                // Prevent rapid-fire recovery loops that cause AbortErrors
+                                // HARD STOP: If we fail 5 times, the stream is corrupted. Stop trying.
+                                if (mediaErrorCount >= 5) {
+                                    console.error("Too many media errors. The stream is likely corrupted by the proxy.");
+                                    cleanupPlayer();
+                                    alert("Stream failed: The video data is corrupted or inaccessible.");
+                                    return;
+                                }
+                                
                                 if (!recoveryTimeout) {
                                     recoveryTimeout = setTimeout(() => {
-                                        if (mediaErrorCount > 2) {
-                                            // If it fails multiple times, try swapping the internal codec
-                                            console.warn("Multiple media errors, swapping audio codec...");
+                                        if (mediaErrorCount === 2) {
+                                            console.warn("Swapping audio codec just in case...");
                                             hls.swapAudioCodec();
                                         }
                                         hls.recoverMediaError();
-                                        
-                                        // Safely attempt to resume playback after recovery
-                                        if (art && art.video) {
-                                            art.video.play().catch(e => console.log("Playback safely prevented:", e.message));
-                                        }
-                                        
                                         recoveryTimeout = null;
-                                    }, 500); // 500ms cooldown
+                                    }, 1000); // 1 full second cooldown
                                 }
                                 break;
                             default:
@@ -410,7 +413,8 @@
                 loadStream: () => {
                     const url = document.getElementById('m3u8Url').value.trim();
                     if (!url) return alert('Please enter a valid URL.');
-                    initPlayer(proxyUrl(url));
+                    // PASS THE RAW URL. Do NOT proxyUrl() here. Let hls.js process the base first.
+                    initPlayer(url);
                 },
                 forceAudioTrack: () => {
                     if (hlsInstance) hlsInstance.audioTrack = parseInt(document.getElementById('audioSelect').value, 10);
