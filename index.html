@@ -298,7 +298,10 @@
                     populateDropdown('subSelect', data.subtitleTracks, hls.subtitleTrack, 'Subtitle Track', 'No subtitles available', true);
                 });
 
-                // Auto-Recovery for Network/Media Errors
+                // Auto-Recovery for Network/Media Errors with Debouncing
+                let recoveryTimeout = null;
+                let mediaErrorCount = 0;
+
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal) {
                         switch (data.type) {
@@ -308,7 +311,26 @@
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
                                 console.warn("Media error encountered, trying to recover...");
-                                hls.recoverMediaError();
+                                mediaErrorCount++;
+                                
+                                // Prevent rapid-fire recovery loops that cause AbortErrors
+                                if (!recoveryTimeout) {
+                                    recoveryTimeout = setTimeout(() => {
+                                        if (mediaErrorCount > 2) {
+                                            // If it fails multiple times, try swapping the internal codec
+                                            console.warn("Multiple media errors, swapping audio codec...");
+                                            hls.swapAudioCodec();
+                                        }
+                                        hls.recoverMediaError();
+                                        
+                                        // Safely attempt to resume playback after recovery
+                                        if (art && art.video) {
+                                            art.video.play().catch(e => console.log("Playback safely prevented:", e.message));
+                                        }
+                                        
+                                        recoveryTimeout = null;
+                                    }, 500); // 500ms cooldown
+                                }
                                 break;
                             default:
                                 console.error("Unrecoverable HLS error. Destroying instance.");
